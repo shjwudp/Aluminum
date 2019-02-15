@@ -176,6 +176,8 @@ class NCCLBackend {
   using req_type = std::shared_ptr<internal::nccl::NCCLRequest>;
   static constexpr std::nullptr_t null_req = nullptr;
 
+  static std::string Name() { return "NCCL"; }
+
   template <typename T>
   static void Allreduce(const T* sendbuf, T* recvbuf, size_t count,
                         ReductionOperator op, comm_type& comm,

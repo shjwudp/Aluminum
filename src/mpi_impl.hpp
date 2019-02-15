@@ -1630,6 +1630,8 @@ class MPIBackend {
   using req_type = internal::AlRequest;
   static constexpr std::nullptr_t null_req = nullptr;
 
+  static std::string Name() { return "MPI"; }
+
   template <typename T>
   static void Allreduce(const T* sendbuf, T* recvbuf, size_t count,
                         ReductionOperator op, comm_type& comm,
