@@ -92,6 +92,11 @@ class AlState {
    */
   virtual void start();
   /**
+   * Run one "prestep" of the algorithm.
+   * Operations finish prestep before they start step, and always finish in order.
+   */
+  virtual bool prestep() { return true; }
+  /**
    * Run one step of the algorithm.
    * Return true if the operation has completed, false if it has more steps
    * remaining.
@@ -321,6 +326,7 @@ class ProgressEngine {
    * Only the user thread accesses this.
    */
   std::unordered_map<void*, InputQueue*> stream_to_queue;
+  std::vector<AlState*> pre_run_queue;
   /**
    * Arbitrary-length run queue.
    * This should be accessed only by the progress engine.

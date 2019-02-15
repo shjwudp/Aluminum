@@ -234,7 +234,7 @@ void ProgressEngine::engine() {
             break;
           }
           if (do_start) {
-            run_queue.push_back(req);
+            pre_run_queue.push_back(req);
             req->start();
 #ifdef AL_DEBUG_HANG_CHECK
             req->start_time = get_time();
@@ -246,6 +246,17 @@ void ProgressEngine::engine() {
             }
           }
         }
+      }
+    }
+    // Process one prestep of each in-progress request.
+    // Only move the first request to the run queue to keep order.
+    for (auto i = pre_run_queue.begin(); i != pre_run_queue.end();) {
+      AlState* req = *i;
+      if (req->prestep() && i == pre_run_queue.begin()) {
+        i = pre_run_queue.erase(i);
+        run_queue.push_back(req);
+      } else {
+        ++i;
       }
     }
     // Process one step of each in-progress request.

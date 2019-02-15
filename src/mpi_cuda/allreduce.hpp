@@ -108,8 +108,18 @@ class HostTransferState : public AlState {
     release_pinned_memory(host_mem);
   }
 
+#ifdef AL_HT_USE_PASSTHROUGH
+  bool prestep() override {
+    return d2h_event.query();
+  }
+#endif
+
   bool step() override {
     if (!ar_started) {
+#ifdef AL_HT_USE_PASSTHROUGH
+      host_ar->setup();
+      ar_started = true;
+#else
       // Wait for memory to get to the host.
       if (d2h_event.query()) {
         host_ar->setup();
@@ -117,6 +127,7 @@ class HostTransferState : public AlState {
       } else {
         return false;
       }
+#endif
     }
     if (!ar_done) {
       // Wait for the allreduce to complete.
