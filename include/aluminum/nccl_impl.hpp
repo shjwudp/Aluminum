@@ -1044,14 +1044,18 @@ class NCCLBackend {
                                     count*sizeof(T)*comm.size(),
                                     cudaMemcpyDeviceToDevice, stream));
     }
+    int my_rank = comm.rank();
+    int my_world_size = comm.size();
     internal::nccl::safe_nccl_group<2>(
       0, comm.size(),
-      [&](int rank) {
-        AL_CHECK_NCCL(ncclSend((const void*) &tmp_sendbuf[rank*count], count,
-                             internal::nccl::TypeMap<T>(), rank,
+      [&](int i) {
+        int send_rank = (my_rank + i) % my_world_size;
+        int recv_rank = (my_rank - i + my_world_size) % my_world_size;
+        AL_CHECK_NCCL(ncclSend((const void*) &tmp_sendbuf[send_rank*count], count,
+                             internal::nccl::TypeMap<T>(), send_rank,
                              comm.m_nccl_comm, stream));
-        AL_CHECK_NCCL(ncclRecv((void*) &recvbuf[rank*count], count,
-                               internal::nccl::TypeMap<T>(), rank,
+        AL_CHECK_NCCL(ncclRecv((void*) &recvbuf[recv_rank*count], count,
+                               internal::nccl::TypeMap<T>(), recv_rank,
                                comm.m_nccl_comm, stream));
       });
     if (tmp_sendbuf != sendbuf) {
